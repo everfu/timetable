@@ -5,5 +5,6 @@ import SwiftUI
 struct TimetableWidgetBundle: WidgetBundle {
     var body: some Widget {
         TimetableLockScreenWidget()
+        TimetableHomeScreenWidget()
     }
 }
