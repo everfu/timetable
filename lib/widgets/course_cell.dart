@@ -23,29 +23,29 @@ class _CourseCellState extends State<CourseCell>
   late Animation<double> _scaleAnim;
 
   static const _lightBgColors = [
-    Color(0xFFDCE4FF),
-    Color(0xFFFFDCE7),
-    Color(0xFFDDF5E3),
-    Color(0xFFFFE7D4),
-    Color(0xFFD8F3F8),
-    Color(0xFFEBDDF7),
-    Color(0xFFFFF4D8),
-    Color(0xFFD8EBFF),
-    Color(0xFFFFDDD6),
-    Color(0xFFD7F4EF),
+    [Color(0xFFDCE4FF), Color(0xFFC8D6FF)],
+    [Color(0xFFFFDCE7), Color(0xFFFFCAD8)],
+    [Color(0xFFDDF5E3), Color(0xFFC8EDD2)],
+    [Color(0xFFFFE7D4), Color(0xFFFFD8BE)],
+    [Color(0xFFD8F3F8), Color(0xFFC2EBF2)],
+    [Color(0xFFEBDDF7), Color(0xFFDDCBF0)],
+    [Color(0xFFFFF4D8), Color(0xFFFFEDC0)],
+    [Color(0xFFD8EBFF), Color(0xFFC4DFFF)],
+    [Color(0xFFFFDDD6), Color(0xFFFFCCC2)],
+    [Color(0xFFD7F4EF), Color(0xFFC2EDE6)],
   ];
 
   static const _darkBgColors = [
-    Color(0xFF2A3268),
-    Color(0xFF5C2240),
-    Color(0xFF1F4D2D),
-    Color(0xFF6B401A),
-    Color(0xFF10444E),
-    Color(0xFF47295C),
-    Color(0xFF615218),
-    Color(0xFF163C64),
-    Color(0xFF622C22),
-    Color(0xFF1D4E44),
+    [Color(0xFF2A3268), Color(0xFF222A58)],
+    [Color(0xFF5C2240), Color(0xFF4E1A36)],
+    [Color(0xFF1F4D2D), Color(0xFF184224)],
+    [Color(0xFF6B401A), Color(0xFF5C3614)],
+    [Color(0xFF10444E), Color(0xFF0C3A42)],
+    [Color(0xFF47295C), Color(0xFF3C2150)],
+    [Color(0xFF615218), Color(0xFF544712)],
+    [Color(0xFF163C64), Color(0xFF103256)],
+    [Color(0xFF622C22), Color(0xFF54241C)],
+    [Color(0xFF1D4E44), Color(0xFF16423A)],
   ];
 
   static const _accentColors = [
@@ -83,7 +83,7 @@ class _CourseCellState extends State<CourseCell>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final index = widget.course.name.hashCode.abs() % _lightBgColors.length;
-    final bgColor = isDark ? _darkBgColors[index] : _lightBgColors[index];
+    final bgColors = isDark ? _darkBgColors[index] : _lightBgColors[index];
     final accentColor = _accentColors[index];
 
     return GestureDetector(
@@ -102,13 +102,17 @@ class _CourseCellState extends State<CourseCell>
           margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           padding: const EdgeInsets.fromLTRB(10, 8, 8, 6),
           decoration: BoxDecoration(
-            color: bgColor,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: bgColors,
+            ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: isDark
                 ? null
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: accentColor.withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -116,6 +120,19 @@ class _CourseCellState extends State<CourseCell>
           ),
           child: Stack(
             children: [
+              // 装饰圆
+              Positioned(
+                top: -8,
+                right: -8,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withValues(alpha: isDark ? 0.08 : 0.06),
+                  ),
+                ),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

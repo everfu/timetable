@@ -4,6 +4,7 @@ import '../database/database_helper.dart';
 import '../widgets/timetable_grid.dart';
 import '../widgets/course_detail_sheet.dart';
 import '../services/course_status_service.dart';
+import '../theme/app_design_tokens.dart';
 
 class TimetableScreen extends StatefulWidget {
   const TimetableScreen({super.key});
@@ -100,14 +101,12 @@ class TimetableScreenState extends State<TimetableScreen> {
     final weekType = _currentWeek.isOdd ? '单周' : '双周';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? Colors.white10 : const Color(0xFFE8E8ED),
-            width: 0.5,
-          ),
-        ),
+        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        borderRadius: BorderRadius.circular(AppDimens.radiusL),
+        boxShadow: AppShadows.cardSubtle(isDark),
       ),
       child: Row(
         children: [
@@ -116,7 +115,7 @@ class TimetableScreenState extends State<TimetableScreen> {
             icon: const Icon(Icons.chevron_left, size: 22),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
           Expanded(
             child: AnimatedSwitcher(
@@ -124,19 +123,45 @@ class TimetableScreenState extends State<TimetableScreen> {
               child: Column(
                 key: ValueKey(_currentWeek),
                 children: [
-                  Text(
-                    '第$_currentWeek周',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '第',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      Text(
+                        '$_currentWeek',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: primary,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        '周',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
                     dateRange.isNotEmpty ? '$dateRange · $weekType' : weekType,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white38 : Colors.black45,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
                 ],
@@ -168,7 +193,7 @@ class TimetableScreenState extends State<TimetableScreen> {
             icon: const Icon(Icons.chevron_right, size: 22),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
         ],
       ),

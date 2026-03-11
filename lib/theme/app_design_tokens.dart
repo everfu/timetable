@@ -63,3 +63,94 @@ class AppDimens {
         floatingNavContentGap;
   }
 }
+
+/// 柔和阴影 — 参考 Best-Flutter-UI-Templates
+class AppShadows {
+  static List<BoxShadow> card(bool isDark) => [
+    BoxShadow(
+      color: isDark
+          ? Colors.black.withValues(alpha: 0.25)
+          : Colors.grey.withValues(alpha: 0.15),
+      offset: const Offset(1.1, 1.1),
+      blurRadius: 10.0,
+    ),
+  ];
+
+  static List<BoxShadow> cardSubtle(bool isDark) => [
+    BoxShadow(
+      color: isDark
+          ? Colors.black.withValues(alpha: 0.18)
+          : Colors.grey.withValues(alpha: 0.08),
+      offset: const Offset(0, 2),
+      blurRadius: 8.0,
+    ),
+  ];
+
+  static List<BoxShadow> elevated(bool isDark) => [
+    BoxShadow(
+      color: isDark
+          ? Colors.black.withValues(alpha: 0.35)
+          : Colors.grey.withValues(alpha: 0.2),
+      offset: const Offset(1.1, 1.1),
+      blurRadius: 16.0,
+    ),
+  ];
+}
+
+/// 渐变色
+class AppGradients {
+  // 主色渐变（蓝紫）
+  static const primary = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF5B6CF0), Color(0xFF8B5CF6)],
+  );
+
+  // 暖色渐变（橙粉）
+  static const warm = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFF6B6B), Color(0xFFFFAB76)],
+  );
+
+  // 冷色渐变（蓝青）
+  static const cool = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF4FACFE), Color(0xFF00F2FE)],
+  );
+
+  // 深色模式主色渐变
+  static const primaryDark = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF3D4DB7), Color(0xFF6D3FC0)],
+  );
+
+  // 课程高亮渐变
+  static const courseHighlight = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+  );
+
+  static const courseHighlightDark = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF4A5BC7), Color(0xFF5E3A8A)],
+  );
+}
+
+/// 不对称圆角 — 参考 Best-Flutter-UI-Templates 的特色设计
+class AppBorderRadius {
+  /// 右上角大圆角卡片
+  static final featureCard = BorderRadius.only(
+    topLeft: Radius.circular(AppDimens.radiusM),
+    bottomLeft: Radius.circular(AppDimens.radiusM),
+    bottomRight: Radius.circular(AppDimens.radiusM),
+    topRight: Radius.circular(48),
+  );
+
+  /// 标准圆角
+  static final standard = BorderRadius.circular(AppDimens.radiusM);
+}
