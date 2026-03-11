@@ -28,7 +28,7 @@ class TimetableApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppTDColors.brandColor7,
+          seedColor: const Color(0xFF772F91),
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: AppTDColors.bgPage,
@@ -62,7 +62,7 @@ class TimetableApp extends StatelessWidget {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppTDColors.brandColor7,
+          seedColor: const Color(0xFF772F91),
           brightness: Brightness.dark,
         ),
         scaffoldBackgroundColor: AppTDColors.bgPageDark,

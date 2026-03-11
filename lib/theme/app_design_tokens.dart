@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 
-/// TDesign 品牌色阶
+/// 品牌色阶 (紫色 #772F91)
 class AppTDColors {
-  // 品牌色阶 (TDesign Blue)
-  static const brandColor1 = Color(0xFFF2F3FF);
-  static const brandColor2 = Color(0xFFD9E1FF);
-  static const brandColor3 = Color(0xFFB5C7FF);
-  static const brandColor4 = Color(0xFF8EABFF);
-  static const brandColor5 = Color(0xFF618DFF);
-  static const brandColor6 = Color(0xFF366EF4);
-  static const brandColor7 = Color(0xFF0052D9); // brandNormalColor
-  static const brandColor8 = Color(0xFF003CAB);
+  // 品牌色阶
+  static const brandColor1 = Color(0xFFF8F0FA);
+  static const brandColor2 = Color(0xFFEDD5F4);
+  static const brandColor3 = Color(0xFFD9ADE3);
+  static const brandColor4 = Color(0xFFC084D0);
+  static const brandColor5 = Color(0xFFA45CB8);
+  static const brandColor6 = Color(0xFF8D42A5);
+  static const brandColor7 = Color(0xFF772F91); // brandNormalColor
+  static const brandColor8 = Color(0xFF5C1F72);
 
   // 功能色
   static const errorColor = Color(0xFFD54941);
@@ -60,13 +60,13 @@ class AppTDColors {
 
 /// 任务相关颜色（保留）
 class AppColors {
-  static const seed = Color(0xFF0052D9);
+  static const seed = Color(0xFF772F91);
 
   static const priorityHigh = Color(0xFFD54941);
   static const priorityMedium = Color(0xFFE37318);
   static const priorityLow = Color(0xFF9CA3AF);
 
-  static const typeHomework = Color(0xFF0052D9);
+  static const typeHomework = Color(0xFF772F91);
   static const typeExam = Color(0xFFD54941);
   static const typeReview = Color(0xFF2BA471);
   static const typeOther = Color(0xFF8B8B8B);
