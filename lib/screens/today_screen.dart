@@ -321,10 +321,23 @@ class TodayScreenState extends State<TodayScreen>
             children: [
               Row(
                 children: [
-                  TDTag(
-                    '即将上课',
-                    theme: TDTagTheme.primary,
-                    size: TDTagSize.small,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTDColors.brandColor7,
+                      borderRadius: BorderRadius.circular(AppRadius.small),
+                    ),
+                    child: const Text(
+                      '即将上课',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
