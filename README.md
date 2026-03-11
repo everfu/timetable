@@ -18,17 +18,9 @@
 
 <div style="width: 400px; display: flex; gap: 10px;">
 
-<div style="width: 200px;">
+<img style="width: 200px;" src="screenshots/home.png" />
 
-![首页](screenshots/home.png)
-
-</div>
-
-<div style="width: 200px;">
-
-![课表](screenshots/timetable.png)
-
-</div>
+<img style="width: 200px;" src="screenshots/timetable.png" />
 
 </div>
 
