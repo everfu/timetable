@@ -104,15 +104,40 @@ class TaskCard extends StatelessWidget {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _timeLabel,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark
-                            ? AppTDColors.textDisabledDark
-                            : AppTDColors.textDisabled,
-                      ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        if (task.linkedCourse != null &&
+                            task.linkedCourse!.isNotEmpty) ...[
+                          Icon(
+                            Icons.book_outlined,
+                            size: 10,
+                            color: AppTDColors.brandColor7.withValues(
+                              alpha: 0.6,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            task.linkedCourse!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTDColors.brandColor7.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          _timeLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark
+                                ? AppTDColors.textDisabledDark
+                                : AppTDColors.textDisabled,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

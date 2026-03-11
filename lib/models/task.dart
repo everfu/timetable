@@ -77,10 +77,15 @@ class Task {
     required this.updatedAt,
   });
 
-  /// 快速创建记事
-  factory Task.note(String content) {
+  /// 快速创建记事（必须关联课程）
+  factory Task.note(String content, {required String linkedCourse}) {
     final now = DateTime.now();
-    return Task(title: content, createdAt: now, updatedAt: now);
+    return Task(
+      title: content,
+      linkedCourse: linkedCourse,
+      createdAt: now,
+      updatedAt: now,
+    );
   }
 
   Map<String, dynamic> toMap() {

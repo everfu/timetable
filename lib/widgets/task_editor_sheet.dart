@@ -3,24 +3,30 @@ import '../models/task.dart';
 import '../theme/app_design_tokens.dart';
 
 class TaskEditorSheet {
+  /// [linkedCourse] 新建时必须传入关联课程名
   static Future<dynamic> show(
     BuildContext context, {
     Task? initialTask,
     String? initialLinkedCourse,
   }) {
+    final courseName = initialTask?.linkedCourse ?? initialLinkedCourse;
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _NoteEditorBody(initialTask: initialTask),
+      builder: (_) => _NoteEditorBody(
+        initialTask: initialTask,
+        courseName: courseName ?? '',
+      ),
     );
   }
 }
 
 class _NoteEditorBody extends StatefulWidget {
   final Task? initialTask;
+  final String courseName;
 
-  const _NoteEditorBody({this.initialTask});
+  const _NoteEditorBody({this.initialTask, required this.courseName});
 
   @override
   State<_NoteEditorBody> createState() => _NoteEditorBodyState();
@@ -53,7 +59,7 @@ class _NoteEditorBodyState extends State<_NoteEditorBody> {
         widget.initialTask!.copyWith(title: text, updatedAt: now),
       );
     } else {
-      Navigator.pop(context, Task.note(text));
+      Navigator.pop(context, Task.note(text, linkedCourse: widget.courseName));
     }
   }
 
@@ -92,7 +98,7 @@ class _NoteEditorBodyState extends State<_NoteEditorBody> {
               ),
               const SizedBox(height: 16),
 
-              // 标题
+              // 标题行
               Row(
                 children: [
                   Text(
@@ -117,6 +123,45 @@ class _NoteEditorBodyState extends State<_NoteEditorBody> {
                     ),
                 ],
               ),
+
+              // 关联课程标签
+              if (widget.courseName.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppTDColors.brandColor7.withValues(alpha: 0.15)
+                          : AppTDColors.brandColor1,
+                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          size: 12,
+                          color: AppTDColors.brandColor7,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.courseName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppTDColors.brandColor7,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
 
               // 输入框

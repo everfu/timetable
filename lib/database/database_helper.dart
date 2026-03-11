@@ -233,6 +233,25 @@ class DatabaseHelper {
     return maps.map((m) => m['name'] as String).toList();
   }
 
+  /// 获取每个课程的未完成记事数
+  Future<Map<String, int>> getPendingNoteCounts() async {
+    final db = await database;
+    final maps = await db.rawQuery(
+      'SELECT linkedCourse, COUNT(*) as cnt FROM tasks '
+      'WHERE isDone = 0 AND linkedCourse IS NOT NULL AND linkedCourse != \'\' '
+      'GROUP BY linkedCourse',
+    );
+    final result = <String, int>{};
+    for (final m in maps) {
+      final course = m['linkedCourse'] as String?;
+      final count = m['cnt'] as int? ?? 0;
+      if (course != null && course.isNotEmpty) {
+        result[course] = count;
+      }
+    }
+    return result;
+  }
+
   // --- 设置 ---
 
   Future<void> setSetting(String key, String value) async {
