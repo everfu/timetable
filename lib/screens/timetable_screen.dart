@@ -90,7 +90,7 @@ class TimetableScreenState extends State<TimetableScreen> {
   Widget _buildWeekSelector(bool isDark) {
     final monday = _getMondayOfWeek(_currentWeek);
     final sunday = monday?.add(const Duration(days: 6));
-    final primary = Theme.of(context).colorScheme.primary;
+    final brand = AppTDColors.brandColor7;
     final isCurrentWeek = _currentWeek == _initialWeek;
 
     String dateRange = '';
@@ -101,12 +101,14 @@ class TimetableScreenState extends State<TimetableScreen> {
     final weekType = _currentWeek.isOdd ? '单周' : '双周';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-        borderRadius: BorderRadius.circular(AppDimens.radiusL),
-        boxShadow: AppShadows.cardSubtle(isDark),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? AppTDColors.strokeDark : AppTDColors.stroke,
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -132,25 +134,28 @@ class TimetableScreenState extends State<TimetableScreen> {
                         '第',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.black54,
+                          fontWeight: FontWeight.w500,
+                          color: isDark
+                              ? AppTDColors.textSecondaryDark
+                              : AppTDColors.textSecondary,
                         ),
                       ),
                       Text(
                         '$_currentWeek',
                         style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: primary,
-                          letterSpacing: -0.5,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: brand,
                         ),
                       ),
                       Text(
                         '周',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.black54,
+                          fontWeight: FontWeight.w500,
+                          color: isDark
+                              ? AppTDColors.textSecondaryDark
+                              : AppTDColors.textSecondary,
                         ),
                       ),
                     ],
@@ -160,8 +165,9 @@ class TimetableScreenState extends State<TimetableScreen> {
                     dateRange.isNotEmpty ? '$dateRange · $weekType' : weekType,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white38 : Colors.black38,
+                      color: isDark
+                          ? AppTDColors.textPlaceholderDark
+                          : AppTDColors.textPlaceholder,
                     ),
                   ),
                 ],
@@ -174,9 +180,9 @@ class TimetableScreenState extends State<TimetableScreen> {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 visualDensity: VisualDensity.compact,
-                backgroundColor: primary.withValues(alpha: 0.1),
+                backgroundColor: AppTDColors.brandColor1,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.medium),
                 ),
               ),
               child: Text(
@@ -184,7 +190,7 @@ class TimetableScreenState extends State<TimetableScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: primary,
+                  color: brand,
                 ),
               ),
             ),
@@ -207,15 +213,17 @@ class TimetableScreenState extends State<TimetableScreen> {
         children: [
           Icon(
             Icons.calendar_today_outlined,
-            size: 56,
-            color: isDark ? Colors.white12 : Colors.black12,
+            size: 48,
+            color: isDark ? AppTDColors.gray11 : AppTDColors.gray4,
           ),
           const SizedBox(height: 16),
           Text(
             '暂无课表数据',
             style: TextStyle(
               fontSize: 16,
-              color: isDark ? Colors.white54 : Colors.black54,
+              color: isDark
+                  ? AppTDColors.textSecondaryDark
+                  : AppTDColors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -223,7 +231,9 @@ class TimetableScreenState extends State<TimetableScreen> {
             '前往设置页导入 xls/xlsx 文件',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white30 : Colors.black26,
+              color: isDark
+                  ? AppTDColors.textPlaceholderDark
+                  : AppTDColors.textPlaceholder,
             ),
           ),
         ],

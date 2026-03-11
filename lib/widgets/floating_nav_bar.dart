@@ -21,30 +21,25 @@ class FloatingNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = Theme.of(context).colorScheme.primary;
+    final brand = AppTDColors.brandColor7;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.spaceXXL,
-        0,
-        AppDimens.spaceXXL,
-        AppDimens.spaceL,
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimens.radiusRound),
+        borderRadius: BorderRadius.circular(AppRadius.round),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             height: AppDimens.floatingNavHeight,
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF2C2C2E).withValues(alpha: 0.88)
-                  : Colors.white.withValues(alpha: 0.88),
-              borderRadius: BorderRadius.circular(AppDimens.radiusRound),
+                  ? AppTDColors.bgSecondaryDark.withValues(alpha: 0.88)
+                  : AppTDColors.bgContainer.withValues(alpha: 0.88),
+              borderRadius: BorderRadius.circular(AppRadius.round),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                  blurRadius: 20,
+                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -53,7 +48,7 @@ class FloatingNavBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
                 _items.length,
-                (i) => _buildItem(context, i, _items[i], isDark, primary),
+                (i) => _buildItem(context, i, _items[i], isDark, brand),
               ),
             ),
           ),
@@ -67,7 +62,7 @@ class FloatingNavBar extends StatelessWidget {
     int index,
     _NavItem item,
     bool isDark,
-    Color primary,
+    Color brand,
   ) {
     final selected = index == currentIndex;
 
@@ -75,7 +70,7 @@ class FloatingNavBar extends StatelessWidget {
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 280),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
           horizontal: selected ? 16 : 12,
@@ -83,9 +78,11 @@ class FloatingNavBar extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? primary.withValues(alpha: isDark ? 0.18 : 0.1)
+              ? (isDark
+                    ? brand.withValues(alpha: 0.15)
+                    : AppTDColors.brandColor1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.extraLarge),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -97,12 +94,12 @@ class FloatingNavBar extends StatelessWidget {
                 key: ValueKey(selected),
                 size: 22,
                 color: selected
-                    ? primary
-                    : (isDark ? Colors.white54 : Colors.black45),
+                    ? brand
+                    : (isDark ? AppTDColors.gray7 : AppTDColors.gray6),
               ),
             ),
             AnimatedSize(
-              duration: const Duration(milliseconds: 280),
+              duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               child: selected
                   ? Padding(
@@ -112,7 +109,7 @@ class FloatingNavBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: primary,
+                          color: brand,
                         ),
                       ),
                     )

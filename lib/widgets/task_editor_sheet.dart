@@ -138,8 +138,8 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimens.radiusXL),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.extraLarge),
             ),
           ),
           child: ListView(

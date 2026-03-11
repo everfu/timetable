@@ -49,41 +49,41 @@ class TaskCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(AppDimens.radiusM),
+          color: AppTDColors.errorColor.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(AppRadius.extraLarge),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 22),
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: AppSpacing.s8),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-          borderRadius: BorderRadius.circular(AppDimens.radiusM),
-          boxShadow: AppShadows.cardSubtle(isDark),
+          color: isDark ? AppTDColors.bgContainerDark : AppTDColors.bgContainer,
+          borderRadius: BorderRadius.circular(AppRadius.extraLarge),
+          boxShadow: TDShadows.base(isDark),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimens.radiusM),
+            borderRadius: BorderRadius.circular(AppRadius.extraLarge),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: const EdgeInsets.all(AppSpacing.s12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 优先级色条
                   Container(
                     width: 3,
-                    height: 44,
+                    height: 40,
                     margin: const EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
                       color: task.isDone
-                          ? (isDark ? Colors.white12 : Colors.black12)
+                          ? (isDark ? AppTDColors.gray12 : AppTDColors.gray3)
                           : pColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.s8),
                   // 内容
                   Expanded(
                     child: Column(
@@ -102,9 +102,7 @@ class TaskCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    color: AppTDColors.brandColor7,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -113,35 +111,37 @@ class TaskCard extends StatelessWidget {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: AppSpacing.s4),
                         // 标题
                         Text(
                           task.title,
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.1,
+                            fontWeight: FontWeight.w600,
                             decoration: task.isDone
                                 ? TextDecoration.lineThrough
                                 : null,
                             color: task.isDone
-                                ? (isDark ? Colors.white38 : Colors.black38)
+                                ? (isDark
+                                      ? AppTDColors.textDisabledDark
+                                      : AppTDColors.textDisabled)
                                 : (isDark
-                                      ? Colors.white
-                                      : const Color(0xFF253840)),
+                                      ? AppTDColors.textPrimaryDark
+                                      : AppTDColors.textPrimary),
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         // 描述
                         if (task.description.isNotEmpty && !task.isDone) ...[
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
                           Text(
                             task.description,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: isDark ? Colors.white38 : Colors.black45,
+                              color: isDark
+                                  ? AppTDColors.textPlaceholderDark
+                                  : AppTDColors.textPlaceholder,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -149,17 +149,17 @@ class TaskCard extends StatelessWidget {
                         ],
                         // 截止时间
                         if (task.deadline != null && !task.isDone) ...[
-                          const SizedBox(height: 5),
+                          const SizedBox(height: AppSpacing.s4),
                           Row(
                             children: [
                               Icon(
                                 Icons.schedule,
                                 size: 12,
                                 color: _isOverdue
-                                    ? AppColors.priorityHigh
+                                    ? AppTDColors.errorColor
                                     : (isDark
-                                          ? Colors.white30
-                                          : Colors.black38),
+                                          ? AppTDColors.textDisabledDark
+                                          : AppTDColors.textDisabled),
                               ),
                               const SizedBox(width: 3),
                               Text(
@@ -168,10 +168,10 @@ class TaskCard extends StatelessWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   color: _isOverdue
-                                      ? AppColors.priorityHigh
+                                      ? AppTDColors.errorColor
                                       : (isDark
-                                            ? Colors.white30
-                                            : Colors.black38),
+                                            ? AppTDColors.textDisabledDark
+                                            : AppTDColors.textDisabled),
                                 ),
                               ),
                             ],
@@ -180,23 +180,27 @@ class TaskCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.s8),
                   // 完成按钮
                   GestureDetector(
                     onTap: onToggle,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                       margin: const EdgeInsets.only(top: 2),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: task.isDone ? Colors.green : Colors.transparent,
+                        color: task.isDone
+                            ? AppTDColors.successColor
+                            : Colors.transparent,
                         border: Border.all(
                           color: task.isDone
-                              ? Colors.green
-                              : (isDark ? Colors.white24 : Colors.black26),
-                          width: 2,
+                              ? AppTDColors.successColor
+                              : (isDark
+                                    ? AppTDColors.gray11
+                                    : AppTDColors.gray5),
+                          width: 1.5,
                         ),
                       ),
                       child: task.isDone
@@ -219,16 +223,16 @@ class TaskCard extends StatelessWidget {
 
   Widget _buildTypeChip(Color color, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.2 : 0.1),
-        borderRadius: BorderRadius.circular(5),
+        color: color.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.small),
       ),
       child: Text(
         task.type.label,
         style: TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: color,
         ),
       ),
