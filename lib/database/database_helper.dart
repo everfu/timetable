@@ -199,10 +199,7 @@ class DatabaseHelper {
     final maps = await db.query(
       'tasks',
       where: 'isDone = 0',
-      orderBy: '''
-        CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END ASC,
-        deadline ASC
-      ''',
+      orderBy: 'createdAt DESC',
     );
     return maps.map((m) => Task.fromMap(m)).toList();
   }
@@ -223,7 +220,7 @@ class DatabaseHelper {
       'tasks',
       where: 'linkedCourse = ?',
       whereArgs: [courseName],
-      orderBy: 'isDone ASC, deadline ASC',
+      orderBy: 'isDone ASC, createdAt DESC',
     );
     return maps.map((m) => Task.fromMap(m)).toList();
   }

@@ -20,17 +20,16 @@ class TodayScreenState extends State<TodayScreen>
     with SingleTickerProviderStateMixin {
   final DatabaseHelper _db = DatabaseHelper();
   List<Course> _todayCourses = [];
-  List<Task> _pendingTasks = [];
-  List<Task> _completedTasks = [];
+  List<Task> _pendingNotes = [];
+  List<Task> _completedNotes = [];
   int _currentWeek = 1;
   bool _loading = true;
   bool _showCompleted = false;
 
   late AnimationController _animController;
-  late Animation<double> _dateCardAnim;
-  late Animation<double> _nextCourseAnim;
-  late Animation<double> _courseListAnim;
-  late Animation<double> _taskAreaAnim;
+  late Animation<double> _headerAnim;
+  late Animation<double> _courseAnim;
+  late Animation<double> _noteAnim;
 
   static const _sectionTimes = CourseStatusService.sectionTimes;
 
@@ -39,21 +38,17 @@ class TodayScreenState extends State<TodayScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 500),
     );
-    _dateCardAnim = CurvedAnimation(
+    _headerAnim = CurvedAnimation(
       parent: _animController,
       curve: const Interval(0.0, 0.4, curve: Curves.easeInOut),
     );
-    _nextCourseAnim = CurvedAnimation(
+    _courseAnim = CurvedAnimation(
       parent: _animController,
-      curve: const Interval(0.1, 0.5, curve: Curves.easeInOut),
+      curve: const Interval(0.15, 0.55, curve: Curves.easeInOut),
     );
-    _courseListAnim = CurvedAnimation(
-      parent: _animController,
-      curve: const Interval(0.2, 0.6, curve: Curves.easeInOut),
-    );
-    _taskAreaAnim = CurvedAnimation(
+    _noteAnim = CurvedAnimation(
       parent: _animController,
       curve: const Interval(0.3, 0.7, curve: Curves.easeInOut),
     );
@@ -83,8 +78,8 @@ class TodayScreenState extends State<TodayScreen>
 
     setState(() {
       _todayCourses = todayCourses;
-      _pendingTasks = pending;
-      _completedTasks = completed;
+      _pendingNotes = pending;
+      _completedNotes = completed;
       _currentWeek = currentWeek;
       _loading = false;
     });
@@ -127,12 +122,8 @@ class TodayScreenState extends State<TodayScreen>
     return null;
   }
 
-  Future<void> _openTaskEditor({Task? task, String? linkedCourse}) async {
-    final result = await TaskEditorSheet.show(
-      context,
-      initialTask: task,
-      initialLinkedCourse: linkedCourse,
-    );
+  Future<void> _openNoteEditor({Task? task}) async {
+    final result = await TaskEditorSheet.show(context, initialTask: task);
     if (result == null) return;
     if (result == '__delete__' && task?.id != null) {
       await _db.deleteTask(task!.id!);
@@ -165,42 +156,24 @@ class TodayScreenState extends State<TodayScreen>
                   bottomReserved,
                 ),
                 children: [
-                  _buildAnimatedEntry(
-                    animation: _dateCardAnim,
-                    child: _buildDateCard(isDark),
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-
-                  if (_nextCourse != null) ...[
-                    _buildAnimatedEntry(
-                      animation: _nextCourseAnim,
-                      child: _buildNextCourseCard(_nextCourse!, isDark),
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                  ],
-
-                  _buildAnimatedEntry(
-                    animation: _courseListAnim,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle('今日课程', '${_todayCourses.length} 节'),
-                        const SizedBox(height: AppSpacing.s8),
-                        if (_todayCourses.isEmpty)
-                          _buildEmptyCard(
-                            '今天没有课，好好休息吧',
-                            Icons.wb_sunny_outlined,
-                          )
-                        else
-                          _buildCourseTimeline(isDark),
-                      ],
-                    ),
+                  // 日期卡 + 下一节课
+                  _buildAnimated(
+                    animation: _headerAnim,
+                    child: _buildHeaderSection(isDark),
                   ),
                   const SizedBox(height: AppSpacing.s16),
 
-                  _buildAnimatedEntry(
-                    animation: _taskAreaAnim,
-                    child: _buildTaskSection(isDark),
+                  // 今日课程
+                  _buildAnimated(
+                    animation: _courseAnim,
+                    child: _buildCourseSection(isDark),
+                  ),
+                  const SizedBox(height: AppSpacing.s16),
+
+                  // 记事
+                  _buildAnimated(
+                    animation: _noteAnim,
+                    child: _buildNoteSection(isDark),
                   ),
                 ],
               ),
@@ -208,9 +181,7 @@ class TodayScreenState extends State<TodayScreen>
     );
   }
 
-  // ─── 动画入场 ───
-
-  Widget _buildAnimatedEntry({
+  Widget _buildAnimated({
     required Animation<double> animation,
     required Widget child,
   }) {
@@ -226,10 +197,12 @@ class TodayScreenState extends State<TodayScreen>
     );
   }
 
-  // ─── 日期卡 — 纯白 + 品牌色强调 ───
+  // ─── 头部：日期 + 下一节课 ───
 
-  Widget _buildDateCard(bool isDark) {
+  Widget _buildHeaderSection(bool isDark) {
     final brand = AppTDColors.brandColor7;
+    final next = _nextCourse;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.s16),
       decoration: BoxDecoration(
@@ -237,75 +210,284 @@ class TodayScreenState extends State<TodayScreen>
         borderRadius: BorderRadius.circular(AppRadius.extraLarge),
         boxShadow: TDShadows.base(isDark),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 日期行
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _greeting,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark
+                            ? AppTDColors.textSecondaryDark
+                            : AppTDColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _dateLabel,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppTDColors.textPrimaryDark
+                            : AppTDColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _weekLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppTDColors.textPlaceholderDark
+                            : AppTDColors.textPlaceholder,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? brand.withValues(alpha: 0.15)
+                      : AppTDColors.brandColor1,
+                  borderRadius: BorderRadius.circular(AppRadius.extraLarge),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${_todayCourses.length}',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: brand,
+                        height: 1.1,
+                      ),
+                    ),
+                    Text(
+                      '节课',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: brand.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // 下一节课（如果有）
+          if (next != null) ...[
+            Divider(
+              height: 24,
+              color: isDark ? AppTDColors.strokeDark : AppTDColors.stroke,
+            ),
+            _buildNextCourseRow(next, isDark, brand),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextCourseRow(Course course, bool isDark, Color brand) {
+    final times = _sectionTimes[course.sectionIndex];
+    final timeStr = times != null ? '${times.$1} - ${times.$2}' : '';
+
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 36,
+          decoration: BoxDecoration(
+            color: brand,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  TDTag(
+                    '即将上课',
+                    theme: TDTagTheme.primary,
+                    size: TDTagSize.small,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      course.name,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppTDColors.textPrimaryDark
+                            : AppTDColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  if (timeStr.isNotEmpty) ...[
+                    Icon(
+                      TDIcons.time,
+                      size: 12,
+                      color: isDark
+                          ? AppTDColors.textPlaceholderDark
+                          : AppTDColors.textPlaceholder,
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      timeStr,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppTDColors.textSecondaryDark
+                            : AppTDColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  if (course.classroom.isNotEmpty) ...[
+                    Icon(
+                      TDIcons.location,
+                      size: 12,
+                      color: isDark
+                          ? AppTDColors.textPlaceholderDark
+                          : AppTDColors.textPlaceholder,
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      course.classroom,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppTDColors.textSecondaryDark
+                            : AppTDColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── 今日课程 ───
+
+  Widget _buildCourseSection(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('今日课程', '${_todayCourses.length} 节', isDark),
+        const SizedBox(height: 8),
+        if (_todayCourses.isEmpty)
+          _buildEmpty('今天没有课，好好休息吧', Icons.wb_sunny_outlined, isDark)
+        else
+          ..._todayCourses.map((c) => _buildCourseItem(c, isDark)),
+      ],
+    );
+  }
+
+  Widget _buildCourseItem(Course course, bool isDark) {
+    final times = _sectionTimes[course.sectionIndex];
+    final timeStr = times != null ? times.$1 : '';
+    final isNext = course == _nextCourse;
+    final brand = AppTDColors.brandColor7;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTDColors.bgContainerDark : AppTDColors.bgContainer,
+        borderRadius: BorderRadius.circular(AppRadius.extraLarge),
+        boxShadow: TDShadows.base(isDark),
+        border: isNext
+            ? Border.all(color: brand.withValues(alpha: 0.2), width: 1)
+            : null,
+      ),
       child: Row(
         children: [
+          // 时间
+          SizedBox(
+            width: 42,
+            child: Text(
+              timeStr,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isNext ? FontWeight.w600 : FontWeight.w400,
+                color: isNext
+                    ? brand
+                    : (isDark
+                          ? AppTDColors.textPlaceholderDark
+                          : AppTDColors.textPlaceholder),
+              ),
+            ),
+          ),
+          // 竖线
+          Container(
+            width: 2,
+            height: 32,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: isNext
+                  ? brand
+                  : (isDark ? AppTDColors.gray11 : AppTDColors.gray3),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+          // 课程信息
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _greeting,
+                  course.name,
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: isDark
-                        ? AppTDColors.textSecondaryDark
-                        : AppTDColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _dateLabel,
-                  style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isDark
                         ? AppTDColors.textPrimaryDark
                         : AppTDColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  _weekLabel,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark
-                        ? AppTDColors.textPlaceholderDark
-                        : AppTDColors.textPlaceholder,
+                if (course.classroom.isNotEmpty || course.teacher.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      [
+                        if (course.classroom.isNotEmpty) course.classroom,
+                        if (course.teacher.isNotEmpty) course.teacher,
+                      ].join(' · '),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppTDColors.textPlaceholderDark
+                            : AppTDColors.textPlaceholder,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          // 课程数
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? brand.withValues(alpha: 0.15)
-                  : AppTDColors.brandColor1,
-              borderRadius: BorderRadius.circular(AppRadius.extraLarge),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${_todayCourses.length}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: brand,
-                    height: 1.1,
-                  ),
-                ),
-                Text(
-                  '节课',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: brand.withValues(alpha: 0.7),
-                  ),
-                ),
               ],
             ),
           ),
@@ -314,10 +496,145 @@ class TodayScreenState extends State<TodayScreen>
     );
   }
 
-  // ─── Section Title ───
+  // ─── 记事 ───
 
-  Widget _buildSectionTitle(String title, String trailing) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildNoteSection(bool isDark) {
+    final totalNotes = _pendingNotes.length + _completedNotes.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '记事',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppTDColors.textPrimaryDark
+                    : AppTDColors.textPrimary,
+              ),
+            ),
+            if (totalNotes > 0) ...[
+              const SizedBox(width: 6),
+              Text(
+                '$totalNotes',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTDColors.brandColor7,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+            const Spacer(),
+            GestureDetector(
+              onTap: () => _openNoteEditor(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppTDColors.brandColor7.withValues(alpha: 0.15)
+                      : AppTDColors.brandColor1,
+                  borderRadius: BorderRadius.circular(AppRadius.medium),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 15, color: AppTDColors.brandColor7),
+                    const SizedBox(width: 2),
+                    Text(
+                      '新建',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTDColors.brandColor7,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        if (_pendingNotes.isEmpty && _completedNotes.isEmpty)
+          _buildEmpty('随手记录，不怕遗忘', Icons.edit_note_outlined, isDark)
+        else ...[
+          ..._pendingNotes.map(
+            (t) => TaskCard(
+              task: t,
+              onTap: () => _openNoteEditor(task: t),
+              onToggle: () async {
+                await _db.updateTask(
+                  t.copyWith(isDone: true, updatedAt: DateTime.now()),
+                );
+                await _loadData();
+              },
+              onDelete: () async {
+                await _db.deleteTask(t.id!);
+                await _loadData();
+              },
+            ),
+          ),
+          if (_completedNotes.isNotEmpty) ...[
+            GestureDetector(
+              onTap: () => setState(() => _showCompleted = !_showCompleted),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    Icon(
+                      _showCompleted ? Icons.expand_less : Icons.expand_more,
+                      size: 16,
+                      color: isDark
+                          ? AppTDColors.textPlaceholderDark
+                          : AppTDColors.textPlaceholder,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '已完成 ${_completedNotes.length}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppTDColors.textPlaceholderDark
+                            : AppTDColors.textPlaceholder,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_showCompleted)
+              ..._completedNotes.map(
+                (t) => TaskCard(
+                  task: t,
+                  onTap: () => _openNoteEditor(task: t),
+                  onToggle: () async {
+                    await _db.updateTask(
+                      t.copyWith(isDone: false, updatedAt: DateTime.now()),
+                    );
+                    await _loadData();
+                  },
+                  onDelete: () async {
+                    await _db.deleteTask(t.id!);
+                    await _loadData();
+                  },
+                ),
+              ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  // ─── 通用组件 ───
+
+  Widget _buildSectionHeader(String title, String trailing, bool isDark) {
     return Row(
       children: [
         Text(
@@ -343,402 +660,10 @@ class TodayScreenState extends State<TodayScreen>
     );
   }
 
-  // ─── 下一节课卡片 — 左侧品牌色竖条 ───
-
-  Widget _buildNextCourseCard(Course course, bool isDark) {
-    final times = _sectionTimes[course.sectionIndex];
-    final timeStr = times != null ? '${times.$1} - ${times.$2}' : '';
-    final brand = AppTDColors.brandColor7;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTDColors.bgContainerDark : AppTDColors.bgContainer,
-        borderRadius: BorderRadius.circular(AppRadius.extraLarge),
-        boxShadow: TDShadows.base(isDark),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 80,
-            decoration: BoxDecoration(
-              color: brand,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppRadius.extraLarge),
-                bottomLeft: Radius.circular(AppRadius.extraLarge),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 14, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      TDTag(
-                        '即将上课',
-                        theme: TDTagTheme.primary,
-                        size: TDTagSize.small,
-                      ),
-                      const Spacer(),
-                      if (timeStr.isNotEmpty)
-                        Text(
-                          timeStr,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppTDColors.textPlaceholderDark
-                                : AppTDColors.textPlaceholder,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    course.name,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? AppTDColors.textPrimaryDark
-                          : AppTDColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      if (course.classroom.isNotEmpty) ...[
-                        Icon(
-                          TDIcons.location,
-                          size: 14,
-                          color: isDark
-                              ? AppTDColors.textPlaceholderDark
-                              : AppTDColors.textPlaceholder,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          course.classroom,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppTDColors.textSecondaryDark
-                                : AppTDColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-                      if (course.teacher.isNotEmpty) ...[
-                        Icon(
-                          TDIcons.user,
-                          size: 14,
-                          color: isDark
-                              ? AppTDColors.textPlaceholderDark
-                              : AppTDColors.textPlaceholder,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          course.teacher,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppTDColors.textSecondaryDark
-                                : AppTDColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── 课程时间轴 ───
-
-  Widget _buildCourseTimeline(bool isDark) {
-    final brand = AppTDColors.brandColor7;
-    final nextCourse = _nextCourse;
-
-    return Column(
-      children: List.generate(_todayCourses.length, (index) {
-        final course = _todayCourses[index];
-        final times = _sectionTimes[course.sectionIndex];
-        final timeStr = times != null ? times.$1 : '';
-        final endStr = times != null ? times.$2 : '';
-        final isNext = course == nextCourse;
-        final isLast = index == _todayCourses.length - 1;
-
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 时间
-              SizedBox(
-                width: 46,
-                child: Column(
-                  children: [
-                    Text(
-                      timeStr,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: isNext ? FontWeight.w600 : FontWeight.w400,
-                        color: isNext
-                            ? brand
-                            : (isDark
-                                  ? AppTDColors.textPlaceholderDark
-                                  : AppTDColors.textPlaceholder),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      endStr,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isDark
-                            ? AppTDColors.textDisabledDark
-                            : AppTDColors.textDisabled,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 时间轴线 + 节点
-              SizedBox(
-                width: 20,
-                child: Column(
-                  children: [
-                    Container(
-                      width: isNext ? 10 : 6,
-                      height: isNext ? 10 : 6,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isNext ? brand : Colors.transparent,
-                        border: Border.all(
-                          color: isNext
-                              ? brand
-                              : (isDark
-                                    ? AppTDColors.gray11
-                                    : AppTDColors.gray4),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                    if (!isLast)
-                      Expanded(
-                        child: Container(
-                          width: 1,
-                          color: isDark
-                              ? AppTDColors.gray11
-                              : AppTDColors.gray3,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              // 课程卡片
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppTDColors.bgContainerDark
-                          : AppTDColors.bgContainer,
-                      borderRadius: BorderRadius.circular(AppRadius.extraLarge),
-                      boxShadow: TDShadows.base(isDark),
-                      border: isNext
-                          ? Border.all(
-                              color: brand.withValues(alpha: 0.25),
-                              width: 1,
-                            )
-                          : null,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          course.name,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppTDColors.textPrimaryDark
-                                : AppTDColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            if (course.classroom.isNotEmpty) ...[
-                              Icon(
-                                TDIcons.location,
-                                size: 12,
-                                color: isDark
-                                    ? AppTDColors.textPlaceholderDark
-                                    : AppTDColors.textPlaceholder,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                course.classroom,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark
-                                      ? AppTDColors.textSecondaryDark
-                                      : AppTDColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                            ],
-                            if (course.teacher.isNotEmpty) ...[
-                              Icon(
-                                TDIcons.user,
-                                size: 12,
-                                color: isDark
-                                    ? AppTDColors.textPlaceholderDark
-                                    : AppTDColors.textPlaceholder,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                course.teacher,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark
-                                      ? AppTDColors.textSecondaryDark
-                                      : AppTDColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
-
-  // ─── 待办事项区域 ───
-
-  Widget _buildTaskSection(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              '待办事项',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark
-                    ? AppTDColors.textPrimaryDark
-                    : AppTDColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () => _openTaskEditor(),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('新建'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        if (_pendingTasks.isEmpty && _completedTasks.isEmpty)
-          _buildEmptyCard('暂无待办事项', Icons.check_circle_outline)
-        else ...[
-          ..._pendingTasks.map(
-            (t) => TaskCard(
-              task: t,
-              onTap: () => _openTaskEditor(task: t),
-              onToggle: () async {
-                await _db.updateTask(
-                  t.copyWith(isDone: true, updatedAt: DateTime.now()),
-                );
-                await _loadData();
-              },
-              onDelete: () async {
-                await _db.deleteTask(t.id!);
-                await _loadData();
-              },
-            ),
-          ),
-          if (_completedTasks.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            InkWell(
-              onTap: () => setState(() => _showCompleted = !_showCompleted),
-              borderRadius: BorderRadius.circular(AppRadius.medium),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      _showCompleted ? Icons.expand_less : Icons.expand_more,
-                      size: 18,
-                      color: isDark
-                          ? AppTDColors.textPlaceholderDark
-                          : AppTDColors.textPlaceholder,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '已完成 (${_completedTasks.length})',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark
-                            ? AppTDColors.textPlaceholderDark
-                            : AppTDColors.textPlaceholder,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_showCompleted)
-              ..._completedTasks.map(
-                (t) => TaskCard(
-                  task: t,
-                  onTap: () => _openTaskEditor(task: t),
-                  onToggle: () async {
-                    await _db.updateTask(
-                      t.copyWith(isDone: false, updatedAt: DateTime.now()),
-                    );
-                    await _loadData();
-                  },
-                  onDelete: () async {
-                    await _db.deleteTask(t.id!);
-                    await _loadData();
-                  },
-                ),
-              ),
-          ],
-        ],
-      ],
-    );
-  }
-
-  // ─── 空状态 ───
-
-  Widget _buildEmptyCard(String text, IconData icon) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildEmpty(String text, IconData icon, bool isDark) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 32),
+      padding: const EdgeInsets.symmetric(vertical: 28),
       decoration: BoxDecoration(
         color: isDark ? AppTDColors.bgContainerDark : AppTDColors.bgContainer,
         borderRadius: BorderRadius.circular(AppRadius.extraLarge),
@@ -748,14 +673,14 @@ class TodayScreenState extends State<TodayScreen>
         children: [
           Icon(
             icon,
-            size: 36,
+            size: 32,
             color: isDark ? AppTDColors.gray11 : AppTDColors.gray4,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             text,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: isDark
                   ? AppTDColors.textPlaceholderDark
                   : AppTDColors.textPlaceholder,

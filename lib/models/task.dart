@@ -1,3 +1,4 @@
+// 保留旧枚举以兼容数据库已有数据
 enum TaskType {
   homework,
   exam,
@@ -36,17 +37,6 @@ enum TaskPriority {
   medium,
   low;
 
-  String get label {
-    switch (this) {
-      case high:
-        return '高';
-      case medium:
-        return '中';
-      case low:
-        return '低';
-    }
-  }
-
   static TaskPriority fromString(String s) {
     switch (s) {
       case 'high':
@@ -59,9 +49,10 @@ enum TaskPriority {
   }
 }
 
+/// 简化的记事模型，复用 tasks 表
 class Task {
   final int? id;
-  final String title;
+  final String title; // 记事内容
   final String description;
   final String? linkedCourse;
   final TaskType type;
@@ -85,6 +76,12 @@ class Task {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  /// 快速创建记事
+  factory Task.note(String content) {
+    final now = DateTime.now();
+    return Task(title: content, createdAt: now, updatedAt: now);
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -132,11 +129,6 @@ class Task {
     int? id,
     String? title,
     String? description,
-    String? linkedCourse,
-    TaskType? type,
-    TaskPriority? priority,
-    DateTime? deadline,
-    DateTime? remindAt,
     bool? isDone,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -145,11 +137,11 @@ class Task {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
-      linkedCourse: linkedCourse ?? this.linkedCourse,
-      type: type ?? this.type,
-      priority: priority ?? this.priority,
-      deadline: deadline ?? this.deadline,
-      remindAt: remindAt ?? this.remindAt,
+      linkedCourse: linkedCourse,
+      type: type,
+      priority: priority,
+      deadline: deadline,
+      remindAt: remindAt,
       isDone: isDone ?? this.isDone,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
