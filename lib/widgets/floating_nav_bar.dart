@@ -15,7 +15,7 @@ class FloatingNavBar extends StatelessWidget {
   static const _items = [
     _NavItem(Icons.today_outlined, Icons.today, '今日'),
     _NavItem(Icons.table_chart_outlined, Icons.table_chart, '课表'),
-    _NavItem(Icons.settings_outlined, Icons.settings, '设置'),
+    _NavItem(Icons.person_outline, Icons.person, '我的'),
   ];
 
   @override
